@@ -14,27 +14,19 @@ import openturns as ot
 import numpy as np
 
 class MarkovChain:
-    def __init__(self):
-        self.stepFunction = None
-        self.stateDistr = None
-        self.nbSteps = None
-        self.initState = None
-
-    def setStepFunction(self,stepFunction):
+    def __init__(self,stepFunction,stateDistr,nbSteps,initState):
+        '''
+        Creates a new Markov Chain
+ 
+        stepFunction : a function, the function which performs the step
+        stateDistr : a Distribution, the distribution of the state
+        nbSteps : an integer, the number of steps within the chain
+        initState : a double, the value of the initial state
+        '''
         self.stepFunction = stepFunction
-        return None
-
-    def setRandomStateDistribution(self,stateDistr):
         self.stateDistr = stateDistr
-        return None
-
-    def setDeterministicInitialState(self,initState):
-        self.initState = initState
-        return None
-
-    def setNumberOfSteps(self,nbSteps):
         self.nbSteps = nbSteps
-        return None
+        self.initState = initState
 
     def getInputDistribution(self):
         # Assemble les variables pour tous les sauts
