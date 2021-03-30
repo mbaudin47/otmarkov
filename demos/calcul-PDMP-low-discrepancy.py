@@ -10,33 +10,50 @@ Montre comment utiliser une séquence à faible discrépance.
 """
 
 import openturns as ot
-import MarkovChain as mc
+import otmarkov
 
-#ot.RandomGenerator.SetSeed(0)
-def myStepModel(Yn,Xn):
-    P = Xn[0]
-    Q = Xn[1]
-    R = Xn[2]
-    Yp = Yn + P*Q + R
-    return Yp
+# ot.RandomGenerator.SetSeed(0)
+
+
+def step_function(state, X):
+    """
+    Perform one step.
+
+    Parameters
+    ----------
+    state : ot.Point(1)
+        The current state.
+    X : ot.Point(3)
+        The random input.
+
+    Returns
+    -------
+    new_state : ot.Point(1)
+        The new state.
+
+    """
+    P, Q, R = X
+    new_state = state + P * Q + R
+    return new_state
+
 
 # Crée les variables de l'état Xn
 P = ot.Normal()
 Q = ot.Normal()
-R = ot.Weibull()
-stateDistr = [P,Q,R]
+R = ot.WeibullMin()
+distribution = ot.ComposedDistribution([P, Q, R])
 
 # Etat initial
-Y0 = 0.
+Y0 = 0.0
 
 # Nombre de sauts
 nbSteps = 4
 
 # MarkovChain
-myMCF = mc.MarkovChain(myStepModel,stateDistr,nbSteps,Y0)
+markov_chain = otmarkov.MarkovChain(step_function, distribution, nbSteps, Y0)
 #
-inputDistribution = myMCF.getInputDistribution()
-modelFunction = myMCF.getFunction()
+inputDistribution = markov_chain.getInputDistribution()
+modelFunction = markov_chain.getFunction()
 #
 sampleSize = 10
 ot.RandomGenerator.SetSeed(1)

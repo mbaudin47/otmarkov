@@ -7,43 +7,61 @@ Test de la classe MarkovChain.
 import openturns as ot
 import unittest
 from numpy.testing import assert_allclose
-import MarkovChain as mc
+import otmarkov
 import numpy as np
+
 
 class TestMarkovChain(unittest.TestCase):
     def test_PQR(self):
-        #ot.RandomGenerator.SetSeed(0)
-        def myStepModel(Yn,Xn):
-            P = Xn[0]
-            Q = Xn[1]
-            R = Xn[2]
-            Yp = Yn + P*Q + R
-            return Yp
-        
-        # Crée les variables de l'état Xn
+        # ot.RandomGenerator.SetSeed(0)
+        def step_function(state, X):
+            """
+            The function which performs the step.
+
+            Parameters
+            ----------
+            state : ot.Point(1)
+                The current state.
+            X : ot.Point(3)
+                The random input.
+
+            Returns
+            -------
+            new_state : ot.Point(1)
+                The new state.
+
+            """
+            P = X[0]
+            Q = X[1]
+            R = X[2]
+            new_state = state + P * Q + R
+            return new_state
+
+        # Create the random vector.
         P = ot.Normal()
         Q = ot.Normal()
-        R = ot.Weibull()
-        stateDistr = [P,Q,R]
-        
-        # Etat initial
-        Y0 = 0.
-        
-        # Nombre de sauts
-        nbSteps = 4
-        
-        # MarkovChainFunction
-        myMCF = mc.MarkovChain(myStepModel,stateDistr,nbSteps,Y0)
-        
+        R = ot.WeibullMin()
+        distribution = ot.ComposedDistribution([P, Q, R])
+
+        # Initial state of the chain.
+        initial_state = 0.0
+
+        number_of_steps = 4
+
+        myMCF = otmarkov.MarkovChain(
+            step_function, distribution, number_of_steps, initial_state
+        )
+
         myOutputRV = myMCF.getOutputRandomVector()
-        
+
         # Estime la moyenne par Monte-Carlo
         sampleSize = 100000
         Y = myOutputRV.getSample(sampleSize)
         mu = Y.computeMean()[0]
-        relativeError =  10 * 2.8/np.sqrt(sampleSize)/4.
+        relativeError = 10 * 2.8 / np.sqrt(sampleSize) / 4.0
         mu_exact = 4.0
-        assert_allclose(mu,mu_exact,relativeError)
+        assert_allclose(mu, mu_exact, relativeError)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()
