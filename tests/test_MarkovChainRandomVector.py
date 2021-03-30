@@ -14,27 +14,25 @@ import numpy as np
 class TestMarkovChainRandomVector(unittest.TestCase):
     def test_PQR(self):
         # ot.RandomGenerator.SetSeed(0)
-        def myStepModel(Yn, Xn):
+        def step_function(Yn, Xn):
             P = Xn[0]
             Q = Xn[1]
             R = Xn[2]
             Yp = Yn + P * Q + R
             return Yp
 
-        # Crée les variables de l'état Xn
+        # Create the distribution of the random input.
         P = ot.Normal()
         Q = ot.Normal()
         R = ot.WeibullMin()
-        stateDistr = [P, Q, R]
+        distribution = ot.ComposedDistribution([P, Q, R])
 
-        # Etat initial
-        Y0 = 0.0
+        initial_state = 0.0
 
-        # Nombre de sauts
-        nbSteps = 4
+        number_of_steps = 4
 
-        # MarkovChainFunction
-        myMCF = otmarkov.MarkovChainRandomVector(myStepModel, stateDistr, nbSteps, Y0)
+        myMCF = otmarkov.MarkovChainRandomVector(step_function, distribution,
+                                                 number_of_steps, initial_state)
 
         # Test getRealization
         y = myMCF.getRealization()[0]

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-@author: Baudin
+@author: Michaël Baudin
 
 Réalise une simulation de Monte-Carlo simple sur une chaîne de Markov.
 
@@ -15,25 +15,46 @@ import numpy as np
 class MarkovChain:
     """A Markov chain class."""
 
-    def __init__(self, stepFunction, stateDistr, nbSteps, initState):
+    def __init__(self, step_function, distribution, number_of_steps, initial_state):
         """
         Create a new Markov Chain.
 
         Parameters
         ----------
-        stepFunction : function
+        step_function : function
             The function which performs the step
-        stateDistr : ot.Distribution
+        distribution : ot.Distribution
             The distribution of the state
-        nbSteps : int
+        number_of_steps : int
             The number of steps within the chain
-        initState : float
+        initial_state : float
             The value of the initial state
         """
-        self.stepFunction = stepFunction
-        self.stateDistr = stateDistr
-        self.nbSteps = nbSteps
-        self.initState = initState
+        self.step_function = step_function
+        self.distribution = distribution
+        self.number_of_steps = number_of_steps
+        self.initial_state = initial_state
+        # Dimension of the input random vector of the step function.
+        self.input_step_dimension = self.distribution.getDimension()
+        # Créée la fonction pour la chaîne
+        self.aggregated_dimension = self.input_step_dimension * self.number_of_steps
+        # Aggregate the random inputs for all states by repetition.
+        list_of_distributions = [self.distribution] * self.number_of_steps
+        self.aggregated_distribution = ot.BlockIndependentDistribution(
+            list_of_distributions)
+
+        def myChainFunction(X):
+            Y = self.initial_state
+            X = np.array(X)
+            for i in range(self.number_of_steps):
+                index_start = i * self.input_step_dimension
+                index_stop = (i + 1) * self.input_step_dimension
+                Xn = X[index_start: index_stop]
+                Y = self.step_function(Y, Xn)
+            return [Y]
+
+        aggregated_dimension = self.aggregated_distribution.getDimension()
+        self.function = ot.PythonFunction(aggregated_dimension, 1, myChainFunction)
 
     def getInputDistribution(self):
         """
@@ -41,14 +62,11 @@ class MarkovChain:
 
         Returns
         -------
-        myDistr : ot.Distribution
+        aggregated_distribution : ot.Distribution
             The distribution of the random state, for all steps.
 
         """
-        # Assemble les variables pour tous les sauts
-        myVars = self.stateDistr * self.nbSteps
-        myDistr = ot.ComposedDistribution(myVars)
-        return myDistr
+        return self.aggregated_distribution
 
     def getFunction(self):
         """
@@ -62,24 +80,11 @@ class MarkovChain:
 
         Returns
         -------
-        model: ot.PythonFunction
+        function: ot.PythonFunction
             The model for all steps.
 
         """
-        def myChainFunction(X):
-            Y = self.initState
-            X = np.array(X)
-            for i in range(self.nbSteps):
-                Xn = X[i * nbVar: (i + 1) * nbVar]
-                Y = self.stepFunction(Y, Xn)
-            return [Y]
-
-        # Number of variables of the state.
-        nbVar = len(self.stateDistr)
-        # Créée la fonction pour la chaîne
-        dim = nbVar * self.nbSteps
-        model = ot.PythonFunction(dim, 1, myChainFunction)
-        return model
+        return self.function
 
     def getOutputRandomVector(self):
         """
@@ -91,10 +96,6 @@ class MarkovChain:
             The random vector which the output of the Markov chain.
 
         """
-        # Assemble les variables pour tous les sauts
-        myDistr = self.getInputDistribution()
-        # Fait le lien (modele,distribution)
-        model = self.getFunction()
-        myInputRV = ot.RandomVector(myDistr)
-        myOutputRV = ot.CompositeRandomVector(model, myInputRV)
+        myInputRV = ot.RandomVector(self.aggregated_distribution)
+        myOutputRV = ot.CompositeRandomVector(self.function, myInputRV)
         return myOutputRV
