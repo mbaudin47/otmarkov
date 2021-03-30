@@ -9,14 +9,6 @@ jobs:
     steps:
       - checkout
       - python/install-deps
-      - run: sudo chown -R circleci:circleci /usr/local/lib/python3.9/site-packages
-      - restore_cache:  # ensure this step occurs *before* installing dependencies
-          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-      - save_cache:
-          key: deps9-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-          paths:
-            - ".venv"
-            - "/usr/local/lib/python3.9/site-packages"
       - run:
           name: Check style of Python Scripts with black
           command: |
@@ -31,7 +23,9 @@ jobs:
             black-nb --check .
       - run:
           name: Test
-          command: ./.circleci/run_docker_linux.sh
+          command: |
+            ls
+            ./run_docker_linux.sh
 workflows:
   main:
     jobs:
