@@ -1,0 +1,32 @@
+version: 2.1
+
+orbs:
+  python: circleci/python@0.2.1
+
+jobs:
+  build-and-test:
+    executor: python/default
+    steps:
+      - checkout
+      - python/install-deps
+      - run:
+          name: Check style of Python Scripts with black
+          command: |
+            black --check otmarkov
+      - run:
+          name: Check style of Python Scripts with flake8
+          command: |
+            flake8 otmarkov
+      - run:
+          name: Check style of Notebooks with black-nb
+          command: |
+            black-nb --check .
+      - run:
+          name: Test
+          command: ./.circleci/run_docker_linux.sh
+
+workflows:
+  main:
+    jobs:
+      - build-and-test
+

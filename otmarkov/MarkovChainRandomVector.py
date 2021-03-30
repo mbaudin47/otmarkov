@@ -9,7 +9,6 @@ la chaîne.
 """
 
 import openturns as ot
-import numpy as np
 import otmarkov
 
 
@@ -31,8 +30,9 @@ class MarkovChainRandomVector(ot.PythonRandomVector):
         initial_state : float
             The value of the initial state
         """
-        self.markov_chain = otmarkov.MarkovChain(step_function, distribution,
-                                                 number_of_steps, initial_state)
+        self.markov_chain = otmarkov.MarkovChain(
+            step_function, distribution, number_of_steps, initial_state
+        )
         self.randomvector = self.markov_chain.getOutputRandomVector()
         aggregated_distribution = self.markov_chain.getInputDistribution()
         aggregated_dimension = aggregated_distribution.getDimension()

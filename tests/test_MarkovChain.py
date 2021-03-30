@@ -48,8 +48,9 @@ class TestMarkovChain(unittest.TestCase):
 
         number_of_steps = 4
 
-        myMCF = otmarkov.MarkovChain(step_function, distribution, number_of_steps,
-                                     initial_state)
+        myMCF = otmarkov.MarkovChain(
+            step_function, distribution, number_of_steps, initial_state
+        )
 
         myOutputRV = myMCF.getOutputRandomVector()
 

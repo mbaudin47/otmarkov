@@ -31,8 +31,9 @@ class TestMarkovChainRandomVector(unittest.TestCase):
 
         number_of_steps = 4
 
-        myMCF = otmarkov.MarkovChainRandomVector(step_function, distribution,
-                                                 number_of_steps, initial_state)
+        myMCF = otmarkov.MarkovChainRandomVector(
+            step_function, distribution, number_of_steps, initial_state
+        )
 
         # Test getRealization
         y = myMCF.getRealization()[0]

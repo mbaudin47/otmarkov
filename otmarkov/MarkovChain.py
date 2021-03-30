@@ -9,7 +9,6 @@ sauts discrets.
 """
 
 import openturns as ot
-import numpy as np
 
 
 class MarkovChain:
@@ -41,15 +40,16 @@ class MarkovChain:
         # Aggregate the random inputs for all states by repetition.
         list_of_distributions = [self.distribution] * self.number_of_steps
         self.aggregated_distribution = ot.BlockIndependentDistribution(
-            list_of_distributions)
+            list_of_distributions
+        )
 
         def myChainFunction(X):
+            X = ot.Point(X)
             Y = self.initial_state
-            X = np.array(X)
             for i in range(self.number_of_steps):
                 index_start = i * self.input_step_dimension
                 index_stop = (i + 1) * self.input_step_dimension
-                Xn = X[index_start: index_stop]
+                Xn = X[index_start:index_stop]
                 Y = self.step_function(Y, Xn)
             return [Y]
 
