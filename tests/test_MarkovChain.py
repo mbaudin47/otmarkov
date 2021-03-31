@@ -97,7 +97,7 @@ class TestMarkovChain(unittest.TestCase):
         )
         aggregated_distribution = markov_chain.getAggregatedDistribution()
         input_dimension = aggregated_distribution.getDimension()
-        function = markov_chain.getFunction()
+        function = markov_chain.getAggregatedFunction()
         print(function.getInputDimension())
 
         # Create Sobol' sequence

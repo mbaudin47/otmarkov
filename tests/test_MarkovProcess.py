@@ -6,7 +6,6 @@ Test de la classe MarkovProcess.
 
 import openturns as ot
 import unittest
-from numpy.testing import assert_allclose
 import otmarkov
 import numpy as np
 

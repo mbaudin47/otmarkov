@@ -83,7 +83,7 @@ class MarkovChain:
         """
         return self.aggregated_distribution
 
-    def getFunction(self):
+    def getAggregatedFunction(self):
         """
         Return the function for all steps.
 

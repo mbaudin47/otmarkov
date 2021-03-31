@@ -5,7 +5,6 @@
 Defines a Piecewise Deterministic Markov Process on finite horizon.
 """
 
-import openturns as ot
 import otmarkov
 
 
