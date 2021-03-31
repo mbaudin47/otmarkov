@@ -46,7 +46,7 @@ class TestMarkovChainRandomVector(unittest.TestCase):
 
         # Create a parametric function from the model
         # The input is random, the parameter is the state, the output is the new state.
-        initial_state = [0.0]
+        initial_state = ot.Point([0.0])
         indices = [3]
         step_function = ot.ParametricFunction(model_py, indices, initial_state)
 
@@ -58,9 +58,10 @@ class TestMarkovChainRandomVector(unittest.TestCase):
 
         # Create the Markov chain
         number_of_steps = 4
-        random_vector = otmarkov.MarkovChainRandomVector(
+        mc_random_vector = otmarkov.MarkovChainRandomVector(
             step_function, distribution, number_of_steps, initial_state
         )
+        random_vector = ot.RandomVector(mc_random_vector)
 
         # Test getRealization
         y = random_vector.getRealization()[0]
@@ -109,7 +110,7 @@ class TestMarkovChainRandomVector(unittest.TestCase):
         model_py = ot.PythonFunction(2, 1, single_component_model)
 
         # Create a parametric function from the model
-        initial_state = [0.0]
+        initial_state = ot.Point([0.0])
         indices = [1]
         step_function = ot.ParametricFunction(model_py, indices, initial_state)
 
@@ -128,9 +129,10 @@ class TestMarkovChainRandomVector(unittest.TestCase):
 
         # Create the Markov chain
         number_of_steps = 4
-        random_vector = otmarkov.MarkovChainRandomVector(
+        mc_random_vector = otmarkov.MarkovChainRandomVector(
             step_function, distribution, number_of_steps, initial_state
         )
+        random_vector = ot.RandomVector(mc_random_vector)
 
         # Estimate the mean with Monte-Carlo
         sampleSize = 1000
