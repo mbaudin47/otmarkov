@@ -59,6 +59,9 @@ class MarkovChain:
 
         aggregated_dimension = self.aggregated_distribution.getDimension()
         self.function = ot.PythonFunction(aggregated_dimension, 1, myChainFunction)
+        output_description = self.step_function.getOutputDescription()
+        self.function.setOutputDescription(output_description)
+        return None
 
     def getInputDistribution(self):
         """
