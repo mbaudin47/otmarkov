@@ -12,8 +12,14 @@ import otmarkov
 class MarkovProcess:
     """A Markov process class."""
 
-    def __init__(self, step_function, distribution, stop_callback,
-                 maximum_number_of_steps, initial_state):
+    def __init__(
+        self,
+        step_function,
+        distribution,
+        stop_callback,
+        maximum_number_of_steps,
+        initial_state,
+    ):
         """
         Create a new Markov process.
 

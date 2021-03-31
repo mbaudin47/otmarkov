@@ -6,43 +6,71 @@ Test de la classe MarkovChainRandomVector.
 
 import openturns as ot
 import unittest
-from numpy.testing import assert_allclose
 import otmarkov
 import numpy as np
 
 
+def modelPQR(X):
+    """
+    The function which performs the step.
+
+    The inputs are:
+        * X[0] : P
+        * X[1] : Q
+        * X[2] : R
+        * X[3] : state
+
+    The output is the new state.
+
+    Parameters
+    ----------
+    X : ot.Point(4)
+        The input of the model.
+
+    Returns
+    -------
+    new_state : ot.Point(1)
+        The new state.
+    """
+    P = X[0]
+    Q = X[1]
+    R = X[2]
+    state = X[3]
+    new_state = state + P * Q + R
+    return [new_state]
+
+
+def single_component_model(X):
+    """
+    Simulate a single-component system.
+
+    The inputs are:
+        * X[0] : T, the life time of the component at this step
+        * X[1] : cumulated_T, the cumulate life time of the component
+
+    The output is the new state, which is the sum of the cumulated life time
+    and the current life time.
+
+    Parameters
+    ----------
+    X : ot.Point(2)
+        The input of the model.
+
+    Returns
+    -------
+    new_cumulated_T : ot.Point(1)
+        The updated cumulated life time of the component.
+    """
+    X = ot.Point(X)
+    T, cumulated_T = X
+    new_cumulated_T = T + cumulated_T
+    return [new_cumulated_T]
+
+
 class TestMarkovChainRandomVector(unittest.TestCase):
     def test_PQR(self):
-        def model(X):
-            """
-            The function which performs the step.
 
-            The inputs are:
-                * X[0] : P
-                * X[1] : Q
-                * X[2] : R
-                * X[3] : state
-
-            The output is the new state.
-
-            Parameters
-            ----------
-            X : ot.Point(4)
-                The input of the model.
-
-            Returns
-            -------
-            new_state : ot.Point(1)
-                The new state.
-            """
-            P = X[0]
-            Q = X[1]
-            R = X[2]
-            state = X[3]
-            new_state = state + P * Q + R
-            return [new_state]
-
-        model_py = ot.PythonFunction(4, 1, model)
+        model_py = ot.PythonFunction(4, 1, modelPQR)
 
         # Create a parametric function from the model
         # The input is random, the parameter is the state, the output is the new state.
@@ -78,35 +106,9 @@ class TestMarkovChainRandomVector(unittest.TestCase):
         relativeError = 10.0 / np.sqrt(sampleSize)
         print("sample_mean=", sample_mean)
         mu_exact = 4.0
-        assert_allclose(sample_mean, mu_exact, relativeError)
+        np.testing.assert_allclose(sample_mean, mu_exact, relativeError)
 
     def test_SingleComponent(self):
-        def single_component_model(X):
-            """
-            Simulate a single-component system.
-
-            The inputs are:
-                * X[0] : T, the life time of the component at this step
-                * X[1] : cumulated_T, the cumulate life time of the component
-
-            The output is the new state, which is the sum of the cumulated life time
-            and the current life time.
-
-            Parameters
-            ----------
-            X : ot.Point(2)
-                The input of the model.
-
-            Returns
-            -------
-            new_cumulated_T : ot.Point(1)
-                The updated cumulated life time of the component.
-            """
-            X = ot.Point(X)
-            T, cumulated_T = X
-            new_cumulated_T = T + cumulated_T
-            return [new_cumulated_T]
-
         model_py = ot.PythonFunction(2, 1, single_component_model)
 
         # Create a parametric function from the model
@@ -142,7 +144,7 @@ class TestMarkovChainRandomVector(unittest.TestCase):
         relativeError = 10.0 / np.sqrt(sampleSize)
         gamma = ot.Gamma(number_of_steps, lambda_parameter)
         mu_exact = gamma.getMean()
-        assert_allclose(sample_mean, mu_exact, relativeError)
+        np.testing.assert_allclose(sample_mean, mu_exact, relativeError)
 
 
 if __name__ == "__main__":

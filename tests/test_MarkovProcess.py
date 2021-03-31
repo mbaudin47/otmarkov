@@ -55,7 +55,7 @@ class TestMarkovProcess(unittest.TestCase):
         np.testing.assert_allclose(new_state, [8.0])
 
         # Create the stop callback
-        class StopOnHorizon():
+        class StopOnHorizon:
             def __init__(self, maximum_time, verbose=False):
                 self.maximum_time = maximum_time
                 self.verbose = verbose
@@ -100,8 +100,11 @@ class TestMarkovProcess(unittest.TestCase):
         # Create the Markov chain
         maximum_number_of_steps = 10
         markov_process = otmarkov.MarkovProcess(
-            step_function, distribution, stop_callback.must_stop,
-            maximum_number_of_steps, initial_state
+            step_function,
+            distribution,
+            stop_callback.must_stop,
+            maximum_number_of_steps,
+            initial_state,
         )
         result = markov_process.simulate()
         initial_state = result.getInitialState()

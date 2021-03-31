@@ -8,6 +8,6 @@ __all__ = [
     "MarkovChain",
     "MarkovChainRandomVector",
     "MarkovProcess",
-    "MarkovChainResult"
+    "MarkovChainResult",
 ]
 __version__ = "0.1"

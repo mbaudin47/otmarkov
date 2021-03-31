@@ -11,7 +11,7 @@ import otmarkov
 import numpy as np
 
 
-def model(X):
+def modelPQR(X):
     """
     The function which performs the step.
     Parameters
@@ -35,7 +35,7 @@ def model(X):
 class TestMarkovChain(unittest.TestCase):
     def test_PQR(self):
 
-        model_py = ot.PythonFunction(4, 1, model)
+        model_py = ot.PythonFunction(4, 1, modelPQR)
 
         # Create a parametric function from the model
         # The input is random, the parameter is the state, the output is the new state.
@@ -74,8 +74,52 @@ class TestMarkovChain(unittest.TestCase):
         mu_exact = 4.0
         assert_allclose(sample_mean, mu_exact, relativeError)
 
+    def test_PQR_LowDiscrepancy(self):
+
+        model_py = ot.PythonFunction(4, 1, modelPQR)
+
+        # Create a parametric function from the model
+        # The input is random, the parameter is the state, the output is the new state.
+        initial_state = ot.Point([0.0])
+        indices = [3]
+        step_function = ot.ParametricFunction(model_py, indices, initial_state)
+
+        # Create the distribution of the random input.
+        P = ot.Normal()
+        Q = ot.Normal()
+        R = ot.WeibullMin()
+        distribution = ot.ComposedDistribution([P, Q, R])
+
+        # Create the Markov chain
+        number_of_steps = 4
+        markov_chain = otmarkov.MarkovChain(
+            step_function, distribution, number_of_steps, initial_state
+        )
+        aggregated_distribution = markov_chain.getAggregatedDistribution()
+        input_dimension = aggregated_distribution.getDimension()
+        function = markov_chain.getFunction()
+        print(function.getInputDimension())
+
+        # Create Sobol' sequence
+        Nbsimu = 1000
+        sequence = ot.SobolSequence(input_dimension)
+        experiment = ot.LowDiscrepancyExperiment(
+            sequence, aggregated_distribution, Nbsimu
+        )
+        experiment.setRandomize(True)
+        input_sample = experiment.generate()
+
+        ot.RandomGenerator.SetSeed(1)
+        output_sample = function(input_sample)
+
+        sample_mean = output_sample.computeMean()[0]
+        print("Sample mean : %f" % (sample_mean))
+        atol = 100.0 / float(Nbsimu)
+        mu_exact = 4.0
+        np.testing.assert_allclose(sample_mean, mu_exact, atol=atol)
+
     def test_PQR_simulation(self):
-        model_py = ot.PythonFunction(4, 1, model)
+        model_py = ot.PythonFunction(4, 1, modelPQR)
 
         # Create a parametric function from the model
         # The input is random, the parameter is the state, the output is the new state.

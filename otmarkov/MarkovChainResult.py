@@ -73,4 +73,3 @@ class MarkovChainResult:
 
         """
         return self.history
-
