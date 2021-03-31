@@ -24,8 +24,8 @@ jobs:
       - run:
           name: Test
           command: |
-            ls
-            ./run_docker_linux.sh
+            ls -alh
+            ./.circleci/run_docker_linux.sh
 workflows:
   main:
     jobs:
