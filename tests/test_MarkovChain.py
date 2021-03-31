@@ -47,7 +47,7 @@ class TestMarkovChain(unittest.TestCase):
         R = -2.123
         X = [P, Q, R]
         Y = step_function(X)
-        np.testing.assert_allclose(Y, [2.15928], rtol=1.e-4)
+        np.testing.assert_allclose(Y, [2.15928], rtol=1.0e-4)
 
         # Create the random vector.
         P = ot.Normal()
@@ -57,20 +57,20 @@ class TestMarkovChain(unittest.TestCase):
 
         # Create the Markov chain
         number_of_steps = 4
-        myMCF = otmarkov.MarkovChain(
+        markov_chain = otmarkov.MarkovChain(
             step_function, distribution, number_of_steps, initial_state
         )
 
-        myOutputRV = myMCF.getRandomVector()
+        random_vector = markov_chain.getRandomVector()
 
         # Estimate the mean with Monte-Carlo
         sampleSize = 10000
-        Y = myOutputRV.getSample(sampleSize)
-        mu = Y.computeMean()[0]
-        print("mu=", mu)
+        sample = random_vector.getSample(sampleSize)
+        sample_mean = sample.computeMean()[0]
+        print("sample_mean=", sample_mean)
         relativeError = 10.0 / np.sqrt(sampleSize)
         mu_exact = 4.0
-        assert_allclose(mu, mu_exact, relativeError)
+        assert_allclose(sample_mean, mu_exact, relativeError)
 
 
 if __name__ == "__main__":

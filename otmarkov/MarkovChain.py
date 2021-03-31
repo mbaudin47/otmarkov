@@ -2,10 +2,7 @@
 """
 @author: Michaël Baudin
 
-Réalise une simulation de Monte-Carlo simple sur une chaîne de Markov.
-
-Définit la classe MarkovChain pour qui implémente une chaîne de Markov à
-sauts discrets.
+Defines a Markov chain class with a given number of transitions.
 """
 
 import openturns as ot
