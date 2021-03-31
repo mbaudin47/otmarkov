@@ -13,13 +13,42 @@ import numpy as np
 
 class TestMarkovChainRandomVector(unittest.TestCase):
     def test_PQR(self):
-        # ot.RandomGenerator.SetSeed(0)
-        def step_function(Yn, Xn):
-            P = Xn[0]
-            Q = Xn[1]
-            R = Xn[2]
-            Yp = Yn + P * Q + R
-            return Yp
+        def model(X):
+            """
+            The function which performs the step.
+
+            The inputs are:
+                * X[0] : P
+                * X[1] : Q
+                * X[2] : R
+                * X[3] : state
+
+            The output is the new state.
+
+            Parameters
+            ----------
+            X : ot.Point(4)
+                The input of the model.
+
+            Returns
+            -------
+            new_state : ot.Point(1)
+                The new state.
+            """
+            P = X[0]
+            Q = X[1]
+            R = X[2]
+            state = X[3]
+            new_state = state + P * Q + R
+            return [new_state]
+
+        model_py = ot.PythonFunction(4, 1, model)
+
+        # Create a parametric function from the model
+        # The input is random, the parameter is the state, the output is the new state.
+        initial_state = [0.0]
+        indices = [3]
+        step_function = ot.ParametricFunction(model_py, indices, initial_state)
 
         # Create the distribution of the random input.
         P = ot.Normal()
@@ -27,10 +56,8 @@ class TestMarkovChainRandomVector(unittest.TestCase):
         R = ot.WeibullMin()
         distribution = ot.ComposedDistribution([P, Q, R])
 
-        initial_state = 0.0
-
+        # Create the Markov chain
         number_of_steps = 4
-
         myMCF = otmarkov.MarkovChainRandomVector(
             step_function, distribution, number_of_steps, initial_state
         )
@@ -43,12 +70,11 @@ class TestMarkovChainRandomVector(unittest.TestCase):
         b = ninterval.getUpperBound()[0]
         self.assertTrue((y > a) & (y < b))
 
-        # Test getSample
-        # Estime la moyenne par Monte-Carlo simple
-        sampleSize = 100000
+        # Create a sample from the Markov chain
+        sampleSize = 1000
         Y = myMCF.getSample(sampleSize)
         mu = Y.computeMean()[0]
-        relativeError = 10 * 2.8 / np.sqrt(sampleSize) / 4.0
+        relativeError = 10.0 / np.sqrt(sampleSize)
         mu_exact = 4.0
         assert_allclose(mu, mu_exact, relativeError)
 

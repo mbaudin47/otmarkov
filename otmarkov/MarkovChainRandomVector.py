@@ -33,7 +33,7 @@ class MarkovChainRandomVector(ot.PythonRandomVector):
         self.markov_chain = otmarkov.MarkovChain(
             step_function, distribution, number_of_steps, initial_state
         )
-        self.randomvector = self.markov_chain.getOutputRandomVector()
+        self.randomvector = self.markov_chain.getRandomVector()
         aggregated_distribution = self.markov_chain.getInputDistribution()
         aggregated_dimension = aggregated_distribution.getDimension()
         super(MarkovChainRandomVector, self).__init__(aggregated_dimension)

@@ -15,26 +15,43 @@ import otmarkov
 # ot.RandomGenerator.SetSeed(0)
 
 
-def step_function(state, X):
+def model(X):
     """
-    Perform one step.
+    The function which performs the step.
+
+    The inputs are:
+        * X[0] : P
+        * X[1] : Q
+        * X[2] : R
+        * X[3] : state
+
+    The output is the new state.
 
     Parameters
     ----------
-    state : ot.Point(1)
-        The current state.
-    X : ot.Point(3)
-        The random input.
+    X : ot.Point(4)
+        The input of the model.
 
     Returns
     -------
     new_state : ot.Point(1)
         The new state.
-
     """
-    P, Q, R = X
+    P = X[0]
+    Q = X[1]
+    R = X[2]
+    state = X[3]
     new_state = state + P * Q + R
-    return new_state
+    return [new_state]
+
+
+model_py = ot.PythonFunction(4, 1, model)
+
+# Create a parametric function from the model
+# The input is random, the parameter is the state, the output is the new state.
+initial_state = [0.0]
+indices = [3]
+step_function = ot.ParametricFunction(model_py, indices, initial_state)
 
 
 # Crée les variables de l'état Xn
@@ -43,14 +60,11 @@ Q = ot.Normal()
 R = ot.WeibullMin()
 distribution = ot.ComposedDistribution([P, Q, R])
 
-# Etat initial
-Y0 = 0.0
-
 # Nombre de sauts
 nbSteps = 4
 
 # MarkovChain
-markov_chain = otmarkov.MarkovChain(step_function, distribution, nbSteps, Y0)
+markov_chain = otmarkov.MarkovChain(step_function, distribution, nbSteps, initial_state)
 #
 inputDistribution = markov_chain.getInputDistribution()
 modelFunction = markov_chain.getFunction()
