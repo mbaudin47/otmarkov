@@ -25,6 +25,8 @@ jobs:
           name: Test
           command: |
             ls -alh
+            chmod ugo+x ./.circleci/run_docker_linux.sh
+            ls -alh .circleci
             ./.circleci/run_docker_linux.sh
 workflows:
   main:
