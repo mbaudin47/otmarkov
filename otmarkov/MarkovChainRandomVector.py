@@ -33,10 +33,9 @@ class MarkovChainRandomVector(ot.PythonRandomVector):
         self.markov_chain = otmarkov.MarkovChain(
             step_function, distribution, number_of_steps, initial_state
         )
-        self.randomvector = self.markov_chain.getOutputRandomVector()
-        aggregated_distribution = self.markov_chain.getInputDistribution()
-        aggregated_dimension = aggregated_distribution.getDimension()
-        super(MarkovChainRandomVector, self).__init__(aggregated_dimension)
+        self.randomvector = self.markov_chain.getCompositeRandomVector()
+        state_dimension = self.markov_chain.getStateDimension()
+        super(MarkovChainRandomVector, self).__init__(state_dimension)
         return None
 
     def getRealization(self):
@@ -49,21 +48,5 @@ class MarkovChainRandomVector(ot.PythonRandomVector):
             The output of the Markov chain after all steps.
 
         """
-        return self.randomvector.getRealization()
-
-    def getSample(self, size):
-        """
-        Generate a sample of the Markov chain.
-
-        Parameters
-        ----------
-        size : int
-            The size of the sample.
-
-        Returns
-        -------
-        sample: ot.Sample(size, d)
-            The sample from the Markov chain.
-
-        """
-        return self.randomvector.getSample(size)
+        X = self.randomvector.getRealization()
+        return X

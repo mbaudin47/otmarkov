@@ -2,13 +2,11 @@
 """
 @author: Michaël Baudin
 
-Réalise une simulation de Monte-Carlo simple sur une chaîne de Markov.
-
-Définit la classe MarkovChain pour qui implémente une chaîne de Markov à
-sauts discrets.
+Defines a Markov chain class with a given number of transitions.
 """
 
 import openturns as ot
+import otmarkov
 
 
 class MarkovChain:
@@ -16,7 +14,7 @@ class MarkovChain:
 
     def __init__(self, step_function, distribution, number_of_steps, initial_state):
         """
-        Create a new Markov Chain.
+        Create a new Markov chain.
 
         Parameters
         ----------
@@ -29,6 +27,16 @@ class MarkovChain:
         initial_state : float
             The value of the initial state
         """
+        # Check dimension of the state
+        parameter_dimension = step_function.getParameterDimension()
+        state_dimension = initial_state.getDimension()
+        if parameter_dimension != state_dimension:
+            raise ValueError(
+                "The parameter dimension of the step function is %d"
+                "but the dimension of the state is %d"
+                % (parameter_dimension, state_dimension)
+            )
+        #
         self.step_function = step_function
         self.distribution = distribution
         self.number_of_steps = number_of_steps
@@ -45,20 +53,27 @@ class MarkovChain:
 
         def myChainFunction(X):
             X = ot.Point(X)
-            Y = self.initial_state
+            state = self.initial_state
             for i in range(self.number_of_steps):
+                # Get the random input for this step
                 index_start = i * self.input_step_dimension
                 index_stop = (i + 1) * self.input_step_dimension
                 Xn = X[index_start:index_stop]
-                Y = self.step_function(Y, Xn)
-            return [Y]
+                # Update the state
+                self.step_function.setParameter(state)
+                # Compute and update the state
+                state = self.step_function(Xn)
+            return state
 
         aggregated_dimension = self.aggregated_distribution.getDimension()
         self.function = ot.PythonFunction(aggregated_dimension, 1, myChainFunction)
+        output_description = self.step_function.getOutputDescription()
+        self.function.setOutputDescription(output_description)
+        return None
 
-    def getInputDistribution(self):
+    def getAggregatedDistribution(self):
         """
-        Return the input distribution.
+        Return the aggregated input distribution.
 
         Returns
         -------
@@ -68,15 +83,16 @@ class MarkovChain:
         """
         return self.aggregated_distribution
 
-    def getFunction(self):
+    def getAggregatedFunction(self):
         """
         Return the function for all steps.
 
-        This function takes the initial state as input
-        and returns the final state as output.
+        This function takes the agglomerated random vector as input
+        and returns the new state as output.
+        Its parameters are the successive values of the state.
         It performs a loop over the number of steps.
         At each step, the new state is computed from the curent
-        random vector and the old step.
+        random vector and the current state.
 
         Returns
         -------
@@ -86,7 +102,7 @@ class MarkovChain:
         """
         return self.function
 
-    def getOutputRandomVector(self):
+    def getCompositeRandomVector(self):
         """
         Return the output random vector.
 
@@ -99,3 +115,34 @@ class MarkovChain:
         myInputRV = ot.RandomVector(self.aggregated_distribution)
         myOutputRV = ot.CompositeRandomVector(self.function, myInputRV)
         return myOutputRV
+
+    def getStateDimension(self):
+        """
+        Return the input distribution.
+
+        Returns
+        -------
+        aggregated_distribution : ot.Distribution
+            The distribution of the random state, for all steps.
+
+        """
+        return self.initial_state.getDimension()
+
+    def simulate(self):
+        """
+        Simulate a trajectory.
+
+        Returns
+        -------
+        result : ot.MarkovChainResult
+            The result of the simulation.
+        """
+        state = self.initial_state
+        history = [state]
+        for i in range(self.number_of_steps):
+            Xn = self.distribution.getRealization()
+            self.step_function.setParameter(state)
+            state = self.step_function(Xn)
+            history.append(state)
+        result = otmarkov.MarkovChainResult(history)
+        return result

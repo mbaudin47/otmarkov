@@ -23,8 +23,11 @@ jobs:
             black-nb --check .
       - run:
           name: Test
-          command: ./.circleci/run_docker_linux.sh
-
+          command: |
+            ls -alh
+            chmod ugo+x ./.circleci/run_docker_linux.sh
+            ls -alh .circleci
+            ./.circleci/run_docker_linux.sh
 workflows:
   main:
     jobs:
